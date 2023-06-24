@@ -76,22 +76,27 @@ bool Game::BeTeammate(int id_1, int id_2) const
 void Game::End() const
 {
     cout << "\033[1;35m";
-    int win_id = 0;
+    int win_id = -1;
     for (int i = 0; i < num_t; i++)
         if (teams_[i]->GetState() == ingame)
         {
             win_id = i;
             cout << teams_[i]->GetName() + " (";
         }
-    bool first = true;
-    for (int i = 0; i < num_p; i++)
-        if (players_[i]->GetTeam() == win_id)
-        {
-            if (first)
-                first = false;
-            else
-                cout << ", ";
-            cout << players_[i]->GetName();
-        }
-    cout << ") wins.\033[0m" << endl;
+    if (win_id == -1)
+        cout << "It's a tie.\033[0m" << endl;
+    else
+    {
+        bool first = true;
+        for (int i = 0; i < num_p; i++)
+            if (players_[i]->GetTeam() == win_id)
+            {
+                if (first)
+                    first = false;
+                else
+                    cout << ", ";
+                cout << players_[i]->GetName();
+            }
+        cout << ") wins.\033[0m" << endl;
+    }
 }
