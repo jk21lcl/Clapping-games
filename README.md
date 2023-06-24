@@ -1,1 +1,1 @@
-# ÅÄÊÖÓÎÏ·£¨Flapping Games£©
+# æ‹æ‰‹æ¸¸æˆï¼ˆFlapping Gamesï¼‰
