@@ -76,7 +76,7 @@ bool Game::BeTeammate(int id_1, int id_2) const
 void Game::End() const
 {
     cout << "\033[1;35m";
-    int win_id;
+    int win_id = 0;
     for (int i = 0; i < num_t; i++)
         if (teams_[i]->GetState() == ingame)
         {
