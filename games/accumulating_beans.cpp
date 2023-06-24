@@ -14,19 +14,19 @@ void Bean::ShowInfo() const
 void Bean::ShowOption() const
 {
     cout << "\033[0;33m  Options:" << endl;
-    cout << "    0: accumulate    1: single_shot    2: double_shot" << endl;
-    cout << "    3: triple_shot    4: small_defense    5: medium_defense" << endl;
-    cout << "    6: big_defense    7: super_defense\033[0m" << endl;
+    cout << "    0: accumulate    1: single_shot    2: double_shot    3: triple_shot" << endl;
+    cout << "    4: small_defense    5: medium_defense    6: big_defense    7: super_defense" << endl;
+    cout << "    8: break_super_defense    9: kill\033[0m" << endl;
 }
 
 void Bean::Input(int p_id)
 {
     int choice;
-    int shot;
+    int tar;
     while (true)
     {
         cin >> choice;
-        if (choice >= 0 && choice <= 7)
+        if (choice >= 0 && choice <= 9)
         {
             if (beans_[p_id] >= consume[choice])
             {
@@ -35,16 +35,16 @@ void Bean::Input(int p_id)
                 if (choice == 1)
                 {
                     cout << "Enter the player_id of your shot." << endl;
-                    cin >> shot;
-                    damage_[p_id * num_p + (shot - 1)]++;
+                    cin >> tar;
+                    damage_[p_id * num_p + (tar - 1)]++;
                 }
                 if (choice == 2)
                 {
                     cout << "Enter the player_id of each shot." << endl;
                     for (int i = 0; i < 2; i++)
                     {
-                        cin >> shot;
-                        damage_[p_id * num_p + (shot - 1)]++;
+                        cin >> tar;
+                        damage_[p_id * num_p + (tar - 1)]++;
                     }
                 }
                 if (choice == 3)
@@ -52,9 +52,21 @@ void Bean::Input(int p_id)
                     cout << "Enter the player_id of each shot." << endl;
                     for (int i = 0; i < 3; i++)
                     {
-                        cin >> shot;
-                        damage_[p_id * num_p + (shot - 1)]++;
+                        cin >> tar;
+                        damage_[p_id * num_p + (tar - 1)]++;
                     }
+                }
+                if (choice == 8)
+                {
+                    cout << "Enter the player_id of your target." << endl;
+                    cin >> tar;
+                    damage_[p_id * num_p + (tar - 1)] = 4;
+                }
+                if (choice == 9)
+                {
+                    cout << "Enter the player_id of your target." << endl;
+                    cin >> tar;
+                    damage_[p_id * num_p + (tar - 1)] = 5;
                 }
                 break;
             }
@@ -84,9 +96,14 @@ void Bean::Process()
         {
             if (IsLiving(i) && IsLiving(j))
             {
-                int m = min(damage_[i * num_p + j], damage_[j * num_p + i]);
-                damage_[i * num_p + j] -= m;
-                damage_[j * num_p + i] -= m;
+                int d_1 = damage_[i * num_p + j];
+                int d_2 = damage_[j * num_p + i];
+                if (d_1 >= 1 && d_1 <= 3 && d_2 >= 1 && d_2 <= 3)
+                {
+                    int m = min(d_1, d_2);
+                    damage_[i * num_p + j] -= m;
+                    damage_[j * num_p + i] -= m;
+                }
             }
         }
 }
@@ -95,17 +112,42 @@ void Bean::Judge()
 {
     for (int i = 0; i < num_p; i++)
     {
-        if (IsLiving(i) && last_[i] != super_defense)
+        if (IsLiving(i) && last_[i] != kill)
         {
-            int damage = 0;
-            for (int j = 0; j < num_p; j++)
-                damage += damage_[j * num_p + i];
-            if (damage == 1 && last_[i] != small_defense)
-                players_[i]->SetState(dying);
-            if (damage == 2 && last_[i] != medium_defense)
-                players_[i]->SetState(dying);
-            if (damage >= 3 && last_[i] != big_defense)
-                players_[i]->SetState(dying);
+            if (last_[i] == super_defense)
+            {
+                for (int j = 0; j < num_p; j++)
+                {
+                    if (damage_[j * num_p + i] == 4)
+                    {
+                        players_[i]->SetState(dying);
+                        beans_[j] += 2;
+                    }
+                    if (damage_[j * num_p + i] == 5)
+                        players_[i]->SetState(dying);
+                } 
+            }
+            else
+            {
+                int damage = 0;
+                for (int j = 0; j < num_p; j++)
+                {
+                    int d = damage_[j * num_p + i];
+                    if (d == 5)
+                    {
+                        players_[i]->SetState(dying);
+                        break;
+                    }
+                    if (d >= 1 && d <= 3)
+                        damage += d;
+                }
+                if (damage == 1 && last_[i] != small_defense && last_[i] != break_super_defense)
+                    players_[i]->SetState(dying);
+                if (damage == 2 && last_[i] != medium_defense)
+                    players_[i]->SetState(dying);
+                if (damage >= 3 && last_[i] != big_defense)
+                    players_[i]->SetState(dying);
+            }
         }
     }
 }
