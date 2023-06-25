@@ -2,6 +2,8 @@
 
 using namespace std;
 
+Bean::Bean() : Game() {}
+
 void Bean::ShowInfo() const
 {
     cout << "\033[0;32m";
@@ -19,6 +21,7 @@ void Bean::ShowOption() const
     cout << "    0: accumulate    1: single_shot    2: double_shot    3: triple_shot" << endl;
     cout << "    4: small_defense    5: medium_defense    6: big_defense    7: super_defense" << endl;
     cout << "    8: break_super_defense    9: kill    10: rebound    11: double_rebound" << endl;
+    cout << "    12: anti_rebound" << endl;
     cout << "\033[0m";
 }
 
@@ -29,7 +32,7 @@ void Bean::Input(int p_id)
     while (true)
     {
         cin >> choice;
-        if (choice >= 0 && choice <= 11)
+        if (choice >= 0 && choice <= 12)
         {
             if (beans_[p_id] >= consume[choice])
             {
@@ -68,6 +71,9 @@ void Bean::Input(int p_id)
                         cin >> tar;
                         damage_[p_id * num_p + (tar - 1)] = 5;
                         break;
+                    case 12:
+                        is_anti_rebound_ = true;
+                        break;
                     default:
                         break;
                 }
@@ -88,7 +94,7 @@ void Bean::Process()
 {
     // rebound
     for (int i = 0; i < num_p; i++)
-        if (last_[i] == rebound)
+        if (IsLiving(i) && last_[i] == rebound)
         {
             int damage = 0;
             for (int j = 0; j < num_p; j++)
@@ -111,7 +117,7 @@ void Bean::Process()
 
     // double rebound
     for (int i = 0; i < num_p; i++)
-        if (last_[i] == double_rebound)
+        if (IsLiving(i) && last_[i] == double_rebound)
         {
             int damage = 0;
             for (int j = 0; j < num_p; j++)
@@ -152,6 +158,7 @@ void Bean::Process()
 
 void Bean::Judge()
 {
+    // normal judge
     for (int i = 0; i < num_p; i++)
     {
         if (IsLiving(i) && last_[i] != kill)
@@ -192,6 +199,12 @@ void Bean::Judge()
             }
         }
     }
+
+    // anti rebound
+    if (is_anti_rebound_)
+        for (int i = 0; i < num_p; i++)
+            if (IsLiving(i) && (last_[i] == rebound || last_[i] == double_rebound))
+                players_[i]->SetState(dying);
 }
 
 void Bean::ComputerAct(int p_id, int round)
@@ -207,7 +220,7 @@ void Bean::ComputerAct(int p_id, int round)
     {
         while (true)
         {
-            int choice = rand() % 12;
+            int choice = rand() % 13;
             if (beans_[p_id] < consume[choice])
                 continue;
             last_[p_id] = (Option)choice;
@@ -303,6 +316,9 @@ void Bean::ComputerAct(int p_id, int round)
                         }
                     }
                     break;
+                case 12:
+                    is_anti_rebound_ = true;
+                    break;
                 default:
                     break;
             }
@@ -330,6 +346,7 @@ void Bean::Start()
             cout << "\033[0;35m" << endl << "Round " << round << ":\033[0m" << endl << endl;
             for (int i = 0; i < num_p * num_p; i++)
                 damage_[i] = 0;
+            is_anti_rebound_ = false;
 
             ShowInfo();
             for (int i = 0; i < num_p; i++)
