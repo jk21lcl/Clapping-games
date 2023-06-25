@@ -544,12 +544,15 @@ void Bean::StrategyRandom(int p_id)
     cout << "\033[34;1m";
     bool zero_bean = true;
     bool all_zero_bean = true;
+    bool lower_than_two = true;
     for (int i = 0; i < num_p; i++)
     {
-        if (!BeTeammate(i, p_id) && ori_beans_[i] != 0)
+        if (IsLiving(i) && !BeTeammate(i, p_id) && ori_beans_[i] != 0)
             zero_bean = false;
-        if (ori_beans_[i] != 0)
+        if (IsLiving(i) && ori_beans_[i] != 0)
             all_zero_bean = false;
+        if (IsLiving(i) && !BeTeammate(i, p_id) && ori_beans_[i] > 1)
+            lower_than_two = false;
     }
     if (all_zero_bean)
     {
@@ -561,10 +564,12 @@ void Bean::StrategyRandom(int p_id)
     {
         while (true)
         {
-            int choice = rand() % 5;
+            int choice = rand() % 6;
             if (choice == 3 || beans_[p_id] < consume[choice])
                 continue;
             if (zero_bean && choice == 4)
+                continue;
+            if (lower_than_two && choice == 5)
                 continue;
             last_[p_id] = (Option)choice;
             beans_[p_id] -= consume[choice];
