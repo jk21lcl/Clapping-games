@@ -4,6 +4,8 @@ Player::Player(string name)
 {
     name_ = name;
     state_ = ingame;
+    team_ = 0;
+    mode_ = human;
 }
 
 Player::Player(string name, int team_id)
@@ -11,6 +13,15 @@ Player::Player(string name, int team_id)
     name_ = name;
     state_ = ingame;
     team_ = team_id;
+    mode_ = human;
+}
+
+Player::Player(string name, int team_id, Mode mode)
+{
+    name_ = name;
+    state_ = ingame;
+    team_ = team_id;
+    mode_ = mode;
 }
 
 void Player::SetState(State state)
@@ -31,4 +42,9 @@ string Player::GetName() const
 int Player::GetTeam() const
 {
     return team_;
+}
+
+Mode Player::GetMode() const
+{
+    return mode_;
 }

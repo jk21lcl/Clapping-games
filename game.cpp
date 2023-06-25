@@ -14,9 +14,9 @@ Game::~Game()
         delete teams_[i];
 }
 
-void Game::AddPlayer(string name, int team_id)
+void Game::AddPlayer(string name, int team_id, Mode mode)
 {
-    players_.push_back(new Player(name, team_id));
+    players_.push_back(new Player(name, team_id, mode));
     num_p++;
 }
 
@@ -68,6 +68,11 @@ bool Game::IsLiving(int p_id) const
     return !(players_[p_id]->GetState() == out);
 }
 
+bool Game::IsHuman(int p_id) const
+{
+    return (players_[p_id]->GetMode() == human);
+}
+
 bool Game::BeTeammate(int id_1, int id_2) const
 {
     return (players_[id_1]->GetTeam() == players_[id_2]->GetTeam());
@@ -75,28 +80,42 @@ bool Game::BeTeammate(int id_1, int id_2) const
 
 void Game::End() const
 {
-    cout << "\033[1;35m";
-    int win_id = -1;
-    for (int i = 0; i < num_t; i++)
-        if (teams_[i]->GetState() == ingame)
+    bool pvc = false;
+    for (int i = 0; i < num_p; i++)
+        if (!IsHuman(i))
+            pvc = true;
+    if (!pvc)
+    {
+        cout << "\033[1;35m";
+        int win_id = -1;
+        for (int i = 0; i < num_t; i++)
+            if (teams_[i]->GetState() == ingame)
+            {
+                win_id = i;
+                cout << teams_[i]->GetName() + " (";
+            }
+        if (win_id == -1)
+            cout << "It's a tie!\033[0m" << endl;
+        else
         {
-            win_id = i;
-            cout << teams_[i]->GetName() + " (";
+            bool first = true;
+            for (int i = 0; i < num_p; i++)
+                if (players_[i]->GetTeam() == win_id)
+                {
+                    if (first)
+                        first = false;
+                    else
+                        cout << ", ";
+                    cout << players_[i]->GetName();
+                }
+            cout << ") wins!\033[0m" << endl;
         }
-    if (win_id == -1)
-        cout << "It's a tie.\033[0m" << endl;
+    }
     else
     {
-        bool first = true;
-        for (int i = 0; i < num_p; i++)
-            if (players_[i]->GetTeam() == win_id)
-            {
-                if (first)
-                    first = false;
-                else
-                    cout << ", ";
-                cout << players_[i]->GetName();
-            }
-        cout << ") wins.\033[0m" << endl;
+        cout << "\033[1;35m";
+        for (int i = 0; i < num_t; i++)
+            if (teams_[i]->GetState() == ingame)
+                cout << teams_[i]->GetName() << " wins!\033[0m" << endl;
     }
 }

@@ -24,6 +24,7 @@ class Fortune : public Game
         const int compare[6][6]={{0,0,2,2,2,0},{0,0,0,0,2,0},{1,0,0,2,2,1},
         {1,0,1,0,2,0},{1,1,1,1,0,0},{0,0,2,0,0,0}};
         // 0 means tie, 1 means the first one wins, 2 means the second one wins
+        const string option_name[6]={"fortune", "defend", "spear", "double spear", "trace", "gold"};
 
         vector<int> fortunes_;
         vector<Option> last_;
@@ -33,4 +34,5 @@ class Fortune : public Game
         void Judge() override;
         
         void Input(int p_id, int round);
+        void ComputerAct(int p_id, int round);
 };

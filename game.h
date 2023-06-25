@@ -3,6 +3,7 @@
 #include "player.h"
 #include <iostream>
 #include <vector>
+#include <ctime>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ class Game
         Game();
         ~Game();
 
-        void AddPlayer(string name, int team_id);
+        void AddPlayer(string name, int team_id, Mode mode = human);
         void AddTeam(string name);
 
         virtual void Start() = 0;
@@ -26,6 +27,7 @@ class Game
         bool CheckInGame() const; // check whether all players are ingame 
         bool CheckTeam() const; // check whether there are at least 2 living teams
         bool IsLiving(int p_id) const;
+        bool IsHuman(int p_id) const;
         bool BeTeammate(int id_1, int id_2) const; // check whether they are teammates
         void UpdateTeamState();
         void UpdatePlayerState();

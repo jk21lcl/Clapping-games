@@ -4,19 +4,22 @@ using namespace std;
 
 void Bean::ShowInfo() const
 {
-    cout << "\033[0;32mNow players have beans:" << endl;
+    cout << "\033[0;32m";
+    cout << "Now all players have beans: (id of each player is before the name)" << endl;
     for (int i = 0; i < num_p; i++)
         if (IsLiving(i))
-            cout << "  " << players_[i]->GetName() << ": " << beans_[i] << endl;
+            cout << " " << i + 1 << "   " << players_[i]->GetName() << ": " << beans_[i] << endl;
     cout << "\033[0m";
 }
 
 void Bean::ShowOption() const
 {
-    cout << "\033[0;33m  Options:" << endl;
+    cout << "\033[0;33m";
+    cout << "  Options:" << endl;
     cout << "    0: accumulate    1: single_shot    2: double_shot    3: triple_shot" << endl;
     cout << "    4: small_defense    5: medium_defense    6: big_defense    7: super_defense" << endl;
-    cout << "    8: break_super_defense    9: kill\033[0m" << endl;
+    cout << "    8: break_super_defense    9: kill" << endl;
+    cout << "\033[0m";
 }
 
 void Bean::Input(int p_id)
@@ -32,41 +35,41 @@ void Bean::Input(int p_id)
             {
                 last_[p_id] = (Option)choice;
                 beans_[p_id] -= consume[choice];
-                if (choice == 1)
+                switch (choice)
                 {
-                    cout << "Enter the player_id of your shot." << endl;
-                    cin >> tar;
-                    damage_[p_id * num_p + (tar - 1)]++;
-                }
-                if (choice == 2)
-                {
-                    cout << "Enter the player_id of each shot." << endl;
-                    for (int i = 0; i < 2; i++)
-                    {
+                    case 1:
+                        cout << "Enter the player_id of your shot." << endl;
                         cin >> tar;
                         damage_[p_id * num_p + (tar - 1)]++;
-                    }
-                }
-                if (choice == 3)
-                {
-                    cout << "Enter the player_id of each shot." << endl;
-                    for (int i = 0; i < 3; i++)
-                    {
+                        break;
+                    case 2:
+                        cout << "Enter the player_id of each shot." << endl;
+                        for (int i = 0; i < 2; i++)
+                        {
+                            cin >> tar;
+                            damage_[p_id * num_p + (tar - 1)]++;
+                        }
+                        break;
+                    case 3:
+                        cout << "Enter the player_id of each shot." << endl;
+                        for (int i = 0; i < 3; i++)
+                        {
+                            cin >> tar;
+                            damage_[p_id * num_p + (tar - 1)]++;
+                        }
+                        break;
+                    case 8:
+                        cout << "Enter the player_id of your target." << endl;
                         cin >> tar;
-                        damage_[p_id * num_p + (tar - 1)]++;
-                    }
-                }
-                if (choice == 8)
-                {
-                    cout << "Enter the player_id of your target." << endl;
-                    cin >> tar;
-                    damage_[p_id * num_p + (tar - 1)] = 4;
-                }
-                if (choice == 9)
-                {
-                    cout << "Enter the player_id of your target." << endl;
-                    cin >> tar;
-                    damage_[p_id * num_p + (tar - 1)] = 5;
+                        damage_[p_id * num_p + (tar - 1)] = 4;
+                        break;
+                    case 9:
+                        cout << "Enter the player_id of your target." << endl;
+                        cin >> tar;
+                        damage_[p_id * num_p + (tar - 1)] = 5;
+                        break;
+                    default:
+                        break;
                 }
                 break;
             }
@@ -152,6 +155,125 @@ void Bean::Judge()
     }
 }
 
+void Bean::ComputerAct(int p_id, int round)
+{
+    cout << "\033[34;1m";
+    if (round == 1)
+    {
+        last_[p_id] = accumulate;
+        beans_[p_id]++;
+        cout << players_[p_id]->GetName() << " uses accumulate." << endl;
+    }
+    else
+    {
+        while (true)
+        {
+            int choice = rand() % 10;
+            if (beans_[p_id] < consume[choice])
+                continue;
+            last_[p_id] = (Option)choice;
+            beans_[p_id] -= consume[choice];
+            cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
+
+            int tar;
+            int times = 0;
+            switch (choice)
+            {
+                case 1:
+                    cout << " Target: ";
+                    while (times < 1)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar]++;
+                            cout << players_[tar]->GetName();
+                            if (times != 1)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                case 2:
+                    cout << " Target: ";
+                    while (times < 2)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar]++;
+                            cout << players_[tar]->GetName();
+                            if (times != 2)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                case 3:
+                    cout << " Target: ";
+                    while (times < 3)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar]++;
+                            cout << players_[tar]->GetName();
+                            if (times != 3)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                case 8:
+                    cout << " Target: ";
+                    while (times < 1)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar] = 4;
+                            cout << players_[tar]->GetName();
+                            if (times != 1)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                case 9:
+                    cout << " Target: ";
+                    while (times < 1)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar] = 5;
+                            cout << players_[tar]->GetName();
+                            if (times != 1)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            cout << endl;
+            break;
+        }
+    }
+    cout << "\033[0m";
+}
+
 void Bean::Start()
 {
     last_.resize(num_p);
@@ -159,6 +281,7 @@ void Bean::Start()
     beans_.resize(num_p);
     for (int i = 0; i < num_p; i++)
         beans_[i] = 0;
+    srand(time(NULL));
 
     int round = 1;
     while (CheckTeam())
@@ -174,9 +297,14 @@ void Bean::Start()
             {
                 if (IsLiving(i))
                 {
-                    cout << "It's " << players_[i]->GetName() << "'s turn." << endl;
-                    ShowOption();
-                    Input(i);
+                    if (IsHuman(i))
+                    {
+                        cout << "It's " << players_[i]->GetName() << "'s turn." << endl;
+                        ShowOption();
+                        Input(i);
+                    }
+                    else
+                        ComputerAct(i, round);
                 }
             }
             Process();

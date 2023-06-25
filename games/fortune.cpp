@@ -2,18 +2,21 @@
 
 void Fortune::ShowInfo() const
 {
-    cout << "\033[0;32mNow players have fortunes:" << endl;
+    cout << "\033[0;32m";
+    cout << "Now all players have fortunes: (id of each player is before the name)" << endl;
     for (int i = 0; i < num_p; i++)
         if (IsLiving(i))
-            cout << "  " << players_[i]->GetName() << ": " << fortunes_[i] << endl;
+            cout << " " << i + 1 << "   " << players_[i]->GetName() << ": " << fortunes_[i] << endl;
     cout << "\033[0m";
 }
 
 void Fortune::ShowOption() const
 {
-    cout << "\033[0;33m  Options:" << endl;
+    cout << "\033[0;33m";
+    cout << "  Options:" << endl;
     cout << "    0: fortune    1: defend    2: spear" << endl;
-    cout << "    3: double spear    4: trace    5: gold\033[0m" << endl;
+    cout << "    3: double spear    4: trace    5: gold" << endl;
+    cout << "\033[0m";
 }
 
 void Fortune::Input(int p_id, int round)
@@ -56,10 +59,35 @@ void Fortune::Judge()
         }
 }
 
+void Fortune::ComputerAct(int p_id, int round)
+{
+    cout << "\033[34;1m";
+    if (round == 1)
+    {
+        last_[p_id] = fortune;
+        fortunes_[p_id]++;
+        cout << players_[p_id]->GetName() << " uses fortune." << endl;
+    }
+    else
+    {
+        while (true)
+        {
+            int choice = rand() % 6;
+            if (fortunes_[p_id] < consume[choice])
+                continue;
+            last_[p_id] = (Option)choice;
+            fortunes_[p_id] -= consume[choice];
+            cout << players_[p_id]->GetName() << " uses " << option_name[choice] << "." << endl;
+            break;
+        }
+    }
+}
+
 void Fortune::Start()
 {
     last_.resize(num_p);
     fortunes_.resize(num_p);
+    srand(time(NULL));
 
     int game = 1;
     while (CheckTeam())
@@ -78,9 +106,14 @@ void Fortune::Start()
             {
                 if (IsLiving(i))
                 {
-                    cout << "It's " << players_[i]->GetName() << "'s turn." << endl;
-                    ShowOption();
-                    Input(i, round);
+                    if (IsHuman(i))
+                    {
+                        cout << "It's " << players_[i]->GetName() << "'s turn." << endl;
+                        ShowOption();
+                        Input(i, round);
+                    }
+                    else
+                        ComputerAct(i, round);
                 }
             }
             Judge();
