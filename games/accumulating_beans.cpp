@@ -18,10 +18,10 @@ void Bean::ShowOption() const
 {
     cout << "\033[0;33m";
     cout << "  Options:" << endl;
-    cout << "    0: accumulate    1: single_shot    2: double_shot    3: triple_shot" << endl;
-    cout << "    4: small_defense    5: medium_defense    6: big_defense    7: super_defense" << endl;
-    cout << "    8: break_super_defense    9: kill    10: rebound    11: double_rebound" << endl;
-    cout << "    12: anti_rebound    13: disturb    14: taunt" << endl;
+    cout << "    0: accumulate             1: single_shot       2: double_shot    3: triple_shot" << endl;
+    cout << "    4: small_defense          5: medium_defense    6: big_defense    7: super_defense" << endl;
+    cout << "    8: break_super_defense    9: kill              10: rebound       11: double_rebound" << endl;
+    cout << "    12: anti_rebound          13: disturb          14: taunt         15: purify" << endl;
     cout << "\033[0m";
 }
 
@@ -32,7 +32,7 @@ void Bean::Input(int p_id)
     while (true)
     {
         cin >> choice;
-        if (choice >= 0 && choice <= 14)
+        if (choice >= 0 && choice <= 15)
         {
             if (beans_[p_id] >= consume[choice])
             {
@@ -75,14 +75,17 @@ void Bean::Input(int p_id)
                         is_anti_rebound_ = true;
                         break;
                     case 13:
-                        for (int i = 0; i < num_t; i++)
-                        {
-                            if (i != players_[p_id]->GetTeam())
-                                is_disturbed_[i] = true;
-                        }
+                        has_disturbed_[players_[p_id]->GetTeam()] = true;
                         break;
                     case 14:
                         num_taunt_[players_[p_id]->GetTeam()]++;
+                        break;
+                    case 15:
+                        for (int i = 0; i < num_t; i++)
+                        {
+                            if (i != players_[p_id]->GetTeam())
+                                is_purified_[i] = true;
+                        }
                         break;
                     default:
                         break;
@@ -102,9 +105,18 @@ void Bean::Input(int p_id)
 
 void Bean::Process()
 {
+    // disturb
+    for (int i = 0; i < num_t; i++)
+    {
+        if (teams_[i]->GetState() == ingame && has_disturbed_[i] && !is_purified_[i])
+            for (int j = 0; j < num_t; j++)
+                if (teams_[j]->GetState() == ingame && j != i)
+                    is_disturbed_[j] = true;
+    }
+
     // taunt
     for (int i = 0; i < num_t; i++)
-        if (teams_[i]->GetState() == ingame && num_taunt_[i] == 1)
+        if (teams_[i]->GetState() == ingame && num_taunt_[i] == 1 && !is_purified_[i])
         {
             int t_id = -1;
             for (int j = 0; j < num_p; j++)
@@ -194,7 +206,7 @@ void Bean::Judge()
     // normal judge
     for (int i = 0; i < num_p; i++)
     {
-        if (IsLiving(i) && last_[i] != kill)
+        if (IsLiving(i) && last_[i] != kill && last_[i] != purify)
         {
             if (last_[i] == super_defense)
             {
@@ -223,7 +235,7 @@ void Bean::Judge()
                     if (d >= 1 && d <= 3)
                         damage += d;
                 }
-                if (last_[i] == taunt)
+                if (last_[i] == taunt && !is_purified_[players_[i]->GetTeam()])
                 {
                     int enemy_teams = 0;
                     int enemy_players = 0;
@@ -270,7 +282,7 @@ void Bean::ComputerAct(int p_id, int round)
     {
         while (true)
         {
-            int choice = rand() % 15;
+            int choice = rand() % 16;
             if (beans_[p_id] < consume[choice])
                 continue;
             last_[p_id] = (Option)choice;
@@ -370,14 +382,17 @@ void Bean::ComputerAct(int p_id, int round)
                     is_anti_rebound_ = true;
                     break;
                 case 13:
-                    for (int i = 0; i < num_t; i++)
-                    {
-                        if (i != players_[p_id]->GetTeam())
-                            is_disturbed_[i] = true;
-                    }
+                    has_disturbed_[players_[p_id]->GetTeam()] = true;
                     break;
                 case 14:
                     num_taunt_[players_[p_id]->GetTeam()]++;
+                    break;
+                case 15:
+                    for (int i = 0; i < num_t; i++)
+                    {
+                        if (i != players_[p_id]->GetTeam())
+                            is_purified_[i] = true;
+                    }
                     break;
                 default:
                     break;
@@ -394,8 +409,10 @@ void Bean::Start()
     last_.resize(num_p);
     damage_.resize(num_p * num_p);
     beans_.resize(num_p);
+    has_disturbed_.resize(num_t);
     is_disturbed_.resize(num_t);
     num_taunt_.resize(num_t);
+    is_purified_.resize(num_t);
     for (int i = 0; i < num_p; i++)
         beans_[i] = 0;
     srand(time(NULL));
@@ -409,9 +426,13 @@ void Bean::Start()
             for (int i = 0; i < num_p * num_p; i++)
                 damage_[i] = 0;
             for (int i = 0; i < num_t; i++)
+                has_disturbed_[i] = false;
+            for (int i = 0; i < num_t; i++)
                 is_disturbed_[i] = false;
             for (int i = 0; i < num_t; i++)
                 num_taunt_[i] = 0;
+            for (int i = 0; i < num_t; i++)
+                is_purified_[i] = false;
             is_anti_rebound_ = false;
 
             ShowInfo();
