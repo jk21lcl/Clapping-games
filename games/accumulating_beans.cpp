@@ -86,18 +86,11 @@ void Bean::Input(int p_id)
 
 void Bean::Process()
 {
-    // process the shot to oneself
-    for (int i = 0; i < num_p; i++)
-    {
-        if (IsLiving(i))
-            damage_[i * num_p + i] = 0;
-    }
-
     // cancel the mutual shots
     for (int i = 0; i < num_p; i++)
         for (int j = 0; j < num_p; j++)
         {
-            if (IsLiving(i) && IsLiving(j))
+            if (i != j && IsLiving(i) && IsLiving(j))
             {
                 int d_1 = damage_[i * num_p + j];
                 int d_2 = damage_[j * num_p + i];
