@@ -60,7 +60,7 @@
 
 单机多人分队模式在`main/main_fortune.cpp`和`main/main_accumulating_beans.cpp`中
 
-pvc模式在`main/main_accumulating_beans_pvc.cpp`中
+pvc模式在`main/main_accumulating_beans_pvc.cpp`和 `main/main_fortune_pvc.cpp`中
 
 ## 发展方向
 
