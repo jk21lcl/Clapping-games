@@ -408,11 +408,14 @@ void Bean::Start()
 {
     last_.resize(num_p);
     damage_.resize(num_p * num_p);
+    ori_beans_.resize(num_p);
     beans_.resize(num_p);
     has_disturbed_.resize(num_t);
     is_disturbed_.resize(num_t);
     num_taunt_.resize(num_t);
     is_purified_.resize(num_t);
+    for (int i = 0; i < num_p; i++)
+        ori_beans_[i] = 0;
     for (int i = 0; i < num_p; i++)
         beans_[i] = 0;
     srand(time(NULL));
@@ -448,10 +451,14 @@ void Bean::Start()
                     }
                     else
                         ComputerAct(i, round);
+                        // PureRandom(i, round);
+                        // StrategyRandom(i);
                 }
             }
             Process();
             Judge();
+            for (int i = 0; i < num_p; i++)
+                ori_beans_[i] = beans_[i];
             round++;
         }
         for (int i = 0; i < num_p; i++)
@@ -462,4 +469,151 @@ void Bean::Start()
     }
 
     End();
+}
+
+void Bean::PureRandom(int p_id, int round)
+{
+    cout << "\033[34;1m";
+    if (round == 1)
+    {
+        last_[p_id] = accumulate;
+        beans_[p_id]++;
+        cout << players_[p_id]->GetName() << " uses accumulate." << endl;
+    }
+    else
+    {
+        while (true)
+        {
+            int choice = rand() % 6;
+            if (choice == 3 || beans_[p_id] < consume[choice])
+                continue;
+            last_[p_id] = (Option)choice;
+            beans_[p_id] -= consume[choice];
+            cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
+
+            int tar;
+            int times = 0;
+            switch (choice)
+            {
+                case 1:
+                    cout << " Target: ";
+                    while (times < 1)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar]++;
+                            cout << players_[tar]->GetName();
+                            if (times != 1)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                case 2:
+                    cout << " Target: ";
+                    while (times < 2)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar]++;
+                            cout << players_[tar]->GetName();
+                            if (times != 2)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            cout << endl;
+            break;
+        }
+    }
+    cout << "\033[0m";
+}
+
+void Bean::StrategyRandom(int p_id)
+{
+    cout << "\033[34;1m";
+    bool zero_bean = true;
+    bool all_zero_bean = true;
+    for (int i = 0; i < num_p; i++)
+    {
+        if (!BeTeammate(i, p_id) && ori_beans_[i] != 0)
+            zero_bean = false;
+        if (ori_beans_[i] != 0)
+            all_zero_bean = false;
+    }
+    if (all_zero_bean)
+    {
+        last_[p_id] = accumulate;
+        beans_[p_id]++;
+        cout << players_[p_id]->GetName() << " uses accumulate." << endl;
+    }
+    else
+    {
+        while (true)
+        {
+            int choice = rand() % 5;
+            if (choice == 3 || beans_[p_id] < consume[choice])
+                continue;
+            if (zero_bean && choice == 4)
+                continue;
+            last_[p_id] = (Option)choice;
+            beans_[p_id] -= consume[choice];
+            cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
+
+            int tar;
+            int times = 0;
+            switch (choice)
+            {
+                case 1:
+                    cout << " Target: ";
+                    while (times < 1)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar]++;
+                            cout << players_[tar]->GetName();
+                            if (times != 1)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                case 2:
+                    cout << " Target: ";
+                    while (times < 2)
+                    {
+                        tar = rand() % num_p;
+                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+                        {
+                            times++;
+                            damage_[p_id * num_p + tar]++;
+                            cout << players_[tar]->GetName();
+                            if (times != 2)
+                                cout << ", ";
+                            else
+                                cout << ".";
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            cout << endl;
+            break;
+        }
+    }
+    cout << "\033[0m";
 }

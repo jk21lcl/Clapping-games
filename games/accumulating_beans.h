@@ -38,6 +38,7 @@ class Bean : public Game
         vector<Option> last_;
         vector<int> damage_; // damage_matrix, (i,j) means i damages j
         // 4 means break_super_defense, 5 means kill
+        vector<int> ori_beans_;
         vector<int> beans_;
         bool is_anti_rebound_;
         vector<bool> has_disturbed_;
@@ -52,4 +53,9 @@ class Bean : public Game
         void Input(int p_id);
         void Process();
         void ComputerAct(int p_id, int round);
+
+        void PureRandom(int p_id, int round);
+        void StrategyRandom(int p_id);
+        // only support the game containing "accumulate", "single_shot", "double_shot",
+        // "small_defense", "medium_defense"
 };
