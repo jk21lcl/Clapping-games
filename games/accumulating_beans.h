@@ -13,7 +13,9 @@ enum Option
     big_defense,
     super_defense,
     break_super_defense,
-    kill
+    kill,
+    rebound,
+    double_rebound
 };
 
 class Bean : public Game
@@ -24,10 +26,10 @@ class Bean : public Game
         void Start() override;
 
     protected:
-        const int consume[10] = {-1,1,2,3,0,0,0,1,1,5};
-        const string option_name[10] = {"accumulate", "single shot", "double shot", "triple shot",
+        const int consume[12] = {-1,1,2,3,0,0,0,1,1,5,0,0};
+        const string option_name[12] = {"accumulate", "single shot", "double shot", "triple shot",
         "small defense", "medium defense", "big defense", "super defense", "break super defense",
-        "kill"};
+        "kill", "rebound", "double rebound"};
 
         vector<Option> last_;
         vector<int> damage_; // damage_matrix, (i,j) means i damages j

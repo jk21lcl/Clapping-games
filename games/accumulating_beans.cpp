@@ -18,7 +18,7 @@ void Bean::ShowOption() const
     cout << "  Options:" << endl;
     cout << "    0: accumulate    1: single_shot    2: double_shot    3: triple_shot" << endl;
     cout << "    4: small_defense    5: medium_defense    6: big_defense    7: super_defense" << endl;
-    cout << "    8: break_super_defense    9: kill" << endl;
+    cout << "    8: break_super_defense    9: kill    10: rebound    11: double_rebound" << endl;
     cout << "\033[0m";
 }
 
@@ -29,7 +29,7 @@ void Bean::Input(int p_id)
     while (true)
     {
         cin >> choice;
-        if (choice >= 0 && choice <= 9)
+        if (choice >= 0 && choice <= 11)
         {
             if (beans_[p_id] >= consume[choice])
             {
@@ -86,6 +86,52 @@ void Bean::Input(int p_id)
 
 void Bean::Process()
 {
+    // rebound
+    for (int i = 0; i < num_p; i++)
+        if (last_[i] == rebound)
+        {
+            int damage = 0;
+            for (int j = 0; j < num_p; j++)
+            {
+                int d = damage_[j * num_p + i];
+                if (d >= 1 && d <= 3)
+                    damage += d;
+            }
+            if (damage == 1)
+                for (int j = 0; j < num_p; j++)
+                {
+                    int d = damage_[j * num_p + i];
+                    if (d >= 1 && d <= 3)
+                    {
+                        damage_[i * num_p + j] = d;
+                        damage_[j * num_p + i] = 0;
+                    }
+                }
+        }
+
+    // double rebound
+    for (int i = 0; i < num_p; i++)
+        if (last_[i] == double_rebound)
+        {
+            int damage = 0;
+            for (int j = 0; j < num_p; j++)
+            {
+                int d = damage_[j * num_p + i];
+                if (d >= 1 && d <= 3)
+                    damage += d;
+            }
+            if (damage == 2)
+                for (int j = 0; j < num_p; j++)
+                {
+                    int d = damage_[j * num_p + i];
+                    if (d >= 1 && d <= 3)
+                    {
+                        damage_[i * num_p + j] = d;
+                        damage_[j * num_p + i] = 0;
+                    }
+                }
+        }
+
     // cancel the mutual shots
     for (int i = 0; i < num_p; i++)
         for (int j = 0; j < num_p; j++)
@@ -161,7 +207,7 @@ void Bean::ComputerAct(int p_id, int round)
     {
         while (true)
         {
-            int choice = rand() % 10;
+            int choice = rand() % 12;
             if (beans_[p_id] < consume[choice])
                 continue;
             last_[p_id] = (Option)choice;
