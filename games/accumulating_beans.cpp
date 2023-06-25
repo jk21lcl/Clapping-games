@@ -21,7 +21,7 @@ void Bean::ShowOption() const
     cout << "    0: accumulate    1: single_shot    2: double_shot    3: triple_shot" << endl;
     cout << "    4: small_defense    5: medium_defense    6: big_defense    7: super_defense" << endl;
     cout << "    8: break_super_defense    9: kill    10: rebound    11: double_rebound" << endl;
-    cout << "    12: anti_rebound    13: disturb" << endl;
+    cout << "    12: anti_rebound    13: disturb    14: taunt" << endl;
     cout << "\033[0m";
 }
 
@@ -32,7 +32,7 @@ void Bean::Input(int p_id)
     while (true)
     {
         cin >> choice;
-        if (choice >= 0 && choice <= 13)
+        if (choice >= 0 && choice <= 14)
         {
             if (beans_[p_id] >= consume[choice])
             {
@@ -81,6 +81,9 @@ void Bean::Input(int p_id)
                                 is_disturbed_[i] = true;
                         }
                         break;
+                    case 14:
+                        num_taunt_[players_[p_id]->GetTeam()]++;
+                        break;
                     default:
                         break;
                 }
@@ -99,6 +102,29 @@ void Bean::Input(int p_id)
 
 void Bean::Process()
 {
+    // taunt
+    for (int i = 0; i < num_t; i++)
+        if (teams_[i]->GetState() == ingame && num_taunt_[i] == 1)
+        {
+            int t_id = -1;
+            for (int j = 0; j < num_p; j++)
+                if (IsLiving(j) && last_[j] == taunt && players_[j]->GetTeam() == i)
+                    t_id = j;
+            for (int j = 0; j < num_p; j++)
+                if (IsLiving(j) && players_[j]->GetTeam() == i)
+                    for (int k = 0; k < num_p; k++)
+                    {
+                        int d = damage_[k * num_p + j];
+                        if (d >= 1 && d <= 3)
+                        {
+                            damage_[k * num_p + t_id] += d;
+                            damage_[k * num_p + j] -= d;
+                        }
+                        if (d == 4)
+                            damage_[k * num_p + j] = 0;
+                    }
+        }
+
     // rebound
     for (int i = 0; i < num_p; i++)
         if (IsLiving(i) && last_[i] == rebound && !(is_disturbed_[players_[i]->GetTeam()]))
@@ -197,12 +223,29 @@ void Bean::Judge()
                     if (d >= 1 && d <= 3)
                         damage += d;
                 }
-                if (damage == 1 && last_[i] != small_defense && last_[i] != break_super_defense)
-                    players_[i]->SetState(dying);
-                if (damage == 2 && last_[i] != medium_defense)
-                    players_[i]->SetState(dying);
-                if (damage >= 3 && last_[i] != big_defense)
-                    players_[i]->SetState(dying);
+                if (last_[i] == taunt)
+                {
+                    int enemy_teams = 0;
+                    int enemy_players = 0;
+                    for (int j = 0; j < num_p; j++)
+                        if (IsLiving(j) && !BeTeammate(i, j))
+                            enemy_players++;
+                    for (int j = 0; j < num_t; j++)
+                        if (teams_[j]->GetState() == ingame && j != players_[i]->GetTeam())
+                            enemy_teams++;
+                    int shield = enemy_players / enemy_teams;
+                    if (damage > shield)
+                        players_[i]->SetState(dying);
+                }
+                else
+                {
+                    if (damage == 1 && last_[i] != small_defense && last_[i] != break_super_defense)
+                        players_[i]->SetState(dying);
+                    if (damage == 2 && last_[i] != medium_defense)
+                        players_[i]->SetState(dying);
+                    if (damage >= 3 && last_[i] != big_defense)
+                        players_[i]->SetState(dying);
+                }
             }
         }
     }
@@ -227,7 +270,7 @@ void Bean::ComputerAct(int p_id, int round)
     {
         while (true)
         {
-            int choice = rand() % 14;
+            int choice = rand() % 15;
             if (beans_[p_id] < consume[choice])
                 continue;
             last_[p_id] = (Option)choice;
@@ -333,6 +376,9 @@ void Bean::ComputerAct(int p_id, int round)
                             is_disturbed_[i] = true;
                     }
                     break;
+                case 14:
+                    num_taunt_[players_[p_id]->GetTeam()]++;
+                    break;
                 default:
                     break;
             }
@@ -349,6 +395,7 @@ void Bean::Start()
     damage_.resize(num_p * num_p);
     beans_.resize(num_p);
     is_disturbed_.resize(num_t);
+    num_taunt_.resize(num_t);
     for (int i = 0; i < num_p; i++)
         beans_[i] = 0;
     srand(time(NULL));
@@ -363,6 +410,8 @@ void Bean::Start()
                 damage_[i] = 0;
             for (int i = 0; i < num_t; i++)
                 is_disturbed_[i] = false;
+            for (int i = 0; i < num_t; i++)
+                num_taunt_[i] = 0;
             is_anti_rebound_ = false;
 
             ShowInfo();
