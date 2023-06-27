@@ -596,10 +596,11 @@ void Bean::FullHard(int p_id)
         prob[14] = 0;
         prob[15] = 0;
     }
-    //// if computer has used disturb, taunt or purify, more probability to attack
-    if (comp_use_disturb || comp_use_taunt || comp_use_purify)
+    //// if computer has used disturb or purify, or has more than 2 beans,
+    //// then more probability to attack
+    if (comp_use_disturb || comp_use_purify || beans_[p_id] > 2)
     {
-        prob[1] = 15;
+        prob[1] = 20;
         prob[2] = 15;
         prob[3] = 15;
     }
@@ -608,6 +609,11 @@ void Bean::FullHard(int p_id)
     if (num_ally >= 4)
     {
         prob[12] = 0;
+    }
+    //// if ally is few, don't use taunt
+    if (num_ally <= 2)
+    {
+        prob[14] = 0;
     }
     //// at most one computer use disturb, taunt, purify
     if (comp_use_anti_rebound)
@@ -654,7 +660,6 @@ void Bean::FullHard(int p_id)
     if (!comp_use_attack)
     {
         prob[13] = 0;
-        prob[14] = 0;
         prob[15] = 0;
     }
 
