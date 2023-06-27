@@ -1,5 +1,10 @@
 #include "fortune.h"
 
+Fortune::Fortune(GameMode mode) : Game()
+{
+    mode_ = mode;
+}
+
 void Fortune::ShowInfo() const
 {
     cout << "\033[0;32m";

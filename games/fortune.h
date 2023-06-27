@@ -2,6 +2,12 @@
 
 #include "game.h"
 
+enum GameMode
+{
+    no_computer,
+    with_computer
+};
+
 enum Option
 {
     fortune,
@@ -15,7 +21,7 @@ enum Option
 class Fortune : public Game
 {
     public:
-        Fortune() : Game() {}
+        Fortune(GameMode mode = no_computer);
 
         void Start() override;
 
@@ -28,6 +34,7 @@ class Fortune : public Game
 
         vector<int> fortunes_;
         vector<Option> last_;
+        GameMode mode_;
 
         void ShowOption() const override;
         void ShowInfo() const override;
@@ -35,4 +42,5 @@ class Fortune : public Game
         
         void Input(int p_id, int round);
         void ComputerAct(int p_id, int round);
+        // pure random except always use fortune at the first round
 };

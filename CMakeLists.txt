@@ -14,9 +14,3 @@ target_link_libraries(fortune game)
 
 add_executable(accumulating_beans main/main_accumulating_beans.cpp)
 target_link_libraries(accumulating_beans game)
-
-add_executable(accumulating_beans_pvc main/main_accumulating_beans_pvc.cpp)
-target_link_libraries(accumulating_beans_pvc game)
-
-add_executable(fortune_pvc main/main_fortune_pvc.cpp)
-target_link_libraries(fortune_pvc game)

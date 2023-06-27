@@ -2,6 +2,15 @@
 
 #include "game.h"
 
+enum GameMode
+{
+    no_computer,
+    full_easy,
+    full_hard,
+    partial_easy,
+    partial_hard
+};
+
 enum Option
 {
     accumulate,
@@ -25,7 +34,7 @@ enum Option
 class Bean : public Game
 {
     public:
-        Bean();
+        Bean(GameMode mode = no_computer);
 
         void Start() override;
 
@@ -40,6 +49,8 @@ class Bean : public Game
         // 4 means break_super_defense, 5 means kill
         vector<int> ori_beans_;
         vector<int> beans_;
+        GameMode mode_;
+
         bool is_anti_rebound_;
         vector<bool> has_disturbed_;
         vector<bool> is_disturbed_;
@@ -54,8 +65,14 @@ class Bean : public Game
         void Process();
         void ComputerAct(int p_id, int round);
 
-        void PureRandom(int p_id, int round);
-        void StrategyRandom(int p_id);
-        // only support the game containing "accumulate", "single_shot", "double_shot",
-        // "small_defense", "medium_defense"
+        // pure random except always accumulate at the first round
+        void FullEasy(int p_id, int round);
+        // not implemented yet
+        void FullHard(int p_id);
+        // pure random except always accumulate at the first round
+        void PartialEasy(int p_id, int round);
+        // use some strategy
+        void PartialHard(int p_id);
+
+        int AttackPlayer(); // attack an living player, returns the player_id
 };

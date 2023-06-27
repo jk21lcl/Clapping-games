@@ -2,7 +2,10 @@
 
 using namespace std;
 
-Bean::Bean() : Game() {}
+Bean::Bean(GameMode mode) : Game()
+{
+    mode_ = mode;
+}
 
 void Bean::ShowInfo() const
 {
@@ -17,89 +20,164 @@ void Bean::ShowInfo() const
 void Bean::ShowOption() const
 {
     cout << "\033[0;33m";
-    cout << "  Options:" << endl;
-    cout << "    0: accumulate             1: single_shot       2: double_shot    3: triple_shot" << endl;
-    cout << "    4: small_defense          5: medium_defense    6: big_defense    7: super_defense" << endl;
-    cout << "    8: break_super_defense    9: kill              10: rebound       11: double_rebound" << endl;
-    cout << "    12: anti_rebound          13: disturb          14: taunt         15: purify" << endl;
+    switch (mode_)
+    {
+        case partial_easy: case partial_hard:
+            cout << "  Options:" << endl;
+            cout << "    0: accumulate    1: single_shot    2: double_shot    4: small_defense    5: medium_defense" << endl;
+            break;
+        default:
+            cout << "  Options:" << endl;
+            cout << "    0: accumulate             1: single_shot       2: double_shot    3: triple_shot" << endl;
+            cout << "    4: small_defense          5: medium_defense    6: big_defense    7: super_defense" << endl;
+            cout << "    8: break_super_defense    9: kill              10: rebound       11: double_rebound" << endl;
+            cout << "    12: anti_rebound          13: disturb          14: taunt         15: purify" << endl;
+            break;
+    }
     cout << "\033[0m";
+}
+
+int Bean::AttackPlayer()
+{
+    int tar;
+    while (true)
+    {
+        cin >> tar;
+        if (tar <= 0 || tar > num_p)
+        {
+            cout << "Illegal input. Please input again." << endl;
+            continue;
+        }
+        if (!IsLiving(tar - 1))
+        {
+            cout << "You cannot attack player that has been out. Please input again." << endl;
+            continue;
+        }
+        break;
+    }
+    return tar;
 }
 
 void Bean::Input(int p_id)
 {
     int choice;
     int tar;
-    while (true)
+    switch (mode_)
     {
-        cin >> choice;
-        if (choice >= 0 && choice <= 15)
-        {
-            if (beans_[p_id] >= consume[choice])
+        case partial_easy: case partial_hard:
+            while (true)
             {
-                last_[p_id] = (Option)choice;
-                beans_[p_id] -= consume[choice];
-                switch (choice)
+                cin >> choice;
+                if (choice >= 0 && choice <= 5 && choice != 3)
                 {
-                    case 1:
-                        cout << "Enter the player_id of your shot." << endl;
-                        cin >> tar;
-                        damage_[p_id * num_p + (tar - 1)]++;
-                        break;
-                    case 2:
-                        cout << "Enter the player_id of each shot." << endl;
-                        for (int i = 0; i < 2; i++)
+                    if (beans_[p_id] >= consume[choice])
+                    {
+                        last_[p_id] = (Option)choice;
+                        beans_[p_id] -= consume[choice];
+                        switch (choice)
                         {
-                            cin >> tar;
-                            damage_[p_id * num_p + (tar - 1)]++;
+                            case 1:
+                                cout << "Enter the player_id of your shot." << endl;
+                                tar = AttackPlayer();
+                                damage_[p_id * num_p + (tar - 1)]++;
+                                break;
+                            case 2:
+                                cout << "Enter the player_id of each shot." << endl;
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    tar = AttackPlayer();
+                                    damage_[p_id * num_p + (tar - 1)]++;
+                                }
+                                break;
+                            default:
+                                break;
                         }
                         break;
-                    case 3:
-                        cout << "Enter the player_id of each shot." << endl;
-                        for (int i = 0; i < 3; i++)
-                        {
-                            cin >> tar;
-                            damage_[p_id * num_p + (tar - 1)]++;
-                        }
-                        break;
-                    case 8:
-                        cout << "Enter the player_id of your target." << endl;
-                        cin >> tar;
-                        damage_[p_id * num_p + (tar - 1)] = 4;
-                        break;
-                    case 9:
-                        cout << "Enter the player_id of your target." << endl;
-                        cin >> tar;
-                        damage_[p_id * num_p + (tar - 1)] = 5;
-                        break;
-                    case 12:
-                        is_anti_rebound_ = true;
-                        break;
-                    case 13:
-                        has_disturbed_[players_[p_id]->GetTeam()] = true;
-                        break;
-                    case 14:
-                        num_taunt_[players_[p_id]->GetTeam()]++;
-                        break;
-                    case 15:
-                        for (int i = 0; i < num_t; i++)
-                        {
-                            if (i != players_[p_id]->GetTeam())
-                                is_purified_[i] = true;
-                        }
-                        break;
-                    default:
-                        break;
+                    }
+                    else
+                    {
+                        cout << "You don't have enough beans. Please input again." << endl;
+                        continue;
+                    }
                 }
-                break;
-            }
-            else
-            {
-                cout << "You don't have enough beans. Please input again." << endl;
+                cout << "Illegal input. Please input again." << endl;
                 continue;
             }
-        }
-        cout << "Illegal input. Please input again." << endl;
-        continue;
+            break;
+        default:
+            while (true)
+            {
+                cin >> choice;
+                if (choice >= 0 && choice <= 15)
+                {
+                    if (beans_[p_id] >= consume[choice])
+                    {
+                        last_[p_id] = (Option)choice;
+                        beans_[p_id] -= consume[choice];
+                        switch (choice)
+                        {
+                            case 1:
+                                cout << "Enter the player_id of your shot." << endl;
+                                tar = AttackPlayer();
+                                damage_[p_id * num_p + (tar - 1)]++;
+                                break;
+                            case 2:
+                                cout << "Enter the player_id of each shot." << endl;
+                                for (int i = 0; i < 2; i++)
+                                {
+                                    tar = AttackPlayer();
+                                    damage_[p_id * num_p + (tar - 1)]++;
+                                }
+                                break;
+                            case 3:
+                                cout << "Enter the player_id of each shot." << endl;
+                                for (int i = 0; i < 3; i++)
+                                {
+                                    tar = AttackPlayer();
+                                    damage_[p_id * num_p + (tar - 1)]++;
+                                }
+                                break;
+                            case 8:
+                                cout << "Enter the player_id of your target." << endl;
+                                tar = AttackPlayer();
+                                damage_[p_id * num_p + (tar - 1)] = 4;
+                                break;
+                            case 9:
+                                cout << "Enter the player_id of your target." << endl;
+                                tar = AttackPlayer();
+                                damage_[p_id * num_p + (tar - 1)] = 5;
+                                break;
+                            case 12:
+                                is_anti_rebound_ = true;
+                                break;
+                            case 13:
+                                has_disturbed_[players_[p_id]->GetTeam()] = true;
+                                break;
+                            case 14:
+                                num_taunt_[players_[p_id]->GetTeam()]++;
+                                break;
+                            case 15:
+                                for (int i = 0; i < num_t; i++)
+                                {
+                                    if (i != players_[p_id]->GetTeam())
+                                        is_purified_[i] = true;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        cout << "You don't have enough beans. Please input again." << endl;
+                        continue;
+                    }
+                }
+                cout << "Illegal input. Please input again." << endl;
+                continue;
+            }
+            break;
     }
 }
 
@@ -271,6 +349,92 @@ void Bean::Judge()
 
 void Bean::ComputerAct(int p_id, int round)
 {
+    switch (mode_)
+    {
+        case full_easy:
+            FullEasy(p_id, round);
+            break;
+        case full_hard:
+            FullHard(p_id);
+            break;
+        case partial_easy:
+            PartialEasy(p_id, round);
+            break;
+        case partial_hard:
+            PartialHard(p_id);
+            break;
+        default:
+            break;
+    }
+}
+
+void Bean::Start()
+{
+    last_.resize(num_p);
+    damage_.resize(num_p * num_p);
+    ori_beans_.resize(num_p);
+    beans_.resize(num_p);
+    has_disturbed_.resize(num_t);
+    is_disturbed_.resize(num_t);
+    num_taunt_.resize(num_t);
+    is_purified_.resize(num_t);
+    for (int i = 0; i < num_p; i++)
+        ori_beans_[i] = 0;
+    for (int i = 0; i < num_p; i++)
+        beans_[i] = 0;
+    srand(time(NULL));
+
+    int round = 1;
+    while (CheckTeam())
+    {
+        while (CheckInGame())
+        {
+            cout << "\033[0;35m" << endl << "Round " << round << ":\033[0m" << endl << endl;
+            for (int i = 0; i < num_p * num_p; i++)
+                damage_[i] = 0;
+            for (int i = 0; i < num_t; i++)
+                has_disturbed_[i] = false;
+            for (int i = 0; i < num_t; i++)
+                is_disturbed_[i] = false;
+            for (int i = 0; i < num_t; i++)
+                num_taunt_[i] = 0;
+            for (int i = 0; i < num_t; i++)
+                is_purified_[i] = false;
+            is_anti_rebound_ = false;
+
+            ShowInfo();
+            for (int i = 0; i < num_p; i++)
+            {
+                if (IsLiving(i))
+                {
+                    if (IsHuman(i))
+                    {
+                        cout << "It's " << players_[i]->GetName() << "'s turn." << endl;
+                        ShowOption();
+                        Input(i);
+                    }
+                    else
+                        ComputerAct(i, round);
+                }
+            }
+            Process();
+            Judge();
+            for (int i = 0; i < num_p; i++)
+                ori_beans_[i] = beans_[i];
+            round++;
+        }
+        for (int i = 0; i < num_p; i++)
+            if (players_[i]->GetState() == dying)
+                cout << "\033[0;31m" << players_[i]->GetName() << " is out.\033[0m" << endl;
+        UpdatePlayerState();
+        UpdateTeamState();
+    }
+
+    End();
+}
+
+void Bean::FullEasy(int p_id, int round)
+{
     cout << "\033[34;1m";
     if (round == 1)
     {
@@ -404,74 +568,12 @@ void Bean::ComputerAct(int p_id, int round)
     cout << "\033[0m";
 }
 
-void Bean::Start()
+void Bean::FullHard(int p_id)
 {
-    last_.resize(num_p);
-    damage_.resize(num_p * num_p);
-    ori_beans_.resize(num_p);
-    beans_.resize(num_p);
-    has_disturbed_.resize(num_t);
-    is_disturbed_.resize(num_t);
-    num_taunt_.resize(num_t);
-    is_purified_.resize(num_t);
-    for (int i = 0; i < num_p; i++)
-        ori_beans_[i] = 0;
-    for (int i = 0; i < num_p; i++)
-        beans_[i] = 0;
-    srand(time(NULL));
 
-    int round = 1;
-    while (CheckTeam())
-    {
-        while (CheckInGame())
-        {
-            cout << "\033[0;35m" << endl << "Round " << round << ":\033[0m" << endl << endl;
-            for (int i = 0; i < num_p * num_p; i++)
-                damage_[i] = 0;
-            for (int i = 0; i < num_t; i++)
-                has_disturbed_[i] = false;
-            for (int i = 0; i < num_t; i++)
-                is_disturbed_[i] = false;
-            for (int i = 0; i < num_t; i++)
-                num_taunt_[i] = 0;
-            for (int i = 0; i < num_t; i++)
-                is_purified_[i] = false;
-            is_anti_rebound_ = false;
-
-            ShowInfo();
-            for (int i = 0; i < num_p; i++)
-            {
-                if (IsLiving(i))
-                {
-                    if (IsHuman(i))
-                    {
-                        cout << "It's " << players_[i]->GetName() << "'s turn." << endl;
-                        ShowOption();
-                        Input(i);
-                    }
-                    else
-                        ComputerAct(i, round);
-                        // PureRandom(i, round);
-                        // StrategyRandom(i);
-                }
-            }
-            Process();
-            Judge();
-            for (int i = 0; i < num_p; i++)
-                ori_beans_[i] = beans_[i];
-            round++;
-        }
-        for (int i = 0; i < num_p; i++)
-            if (players_[i]->GetState() == dying)
-                cout << "\033[0;31m" << players_[i]->GetName() << " is out.\033[0m" << endl;
-        UpdatePlayerState();
-        UpdateTeamState();
-    }
-
-    End();
 }
 
-void Bean::PureRandom(int p_id, int round)
+void Bean::PartialEasy(int p_id, int round)
 {
     cout << "\033[34;1m";
     if (round == 1)
@@ -539,7 +641,7 @@ void Bean::PureRandom(int p_id, int round)
     cout << "\033[0m";
 }
 
-void Bean::StrategyRandom(int p_id)
+void Bean::PartialHard(int p_id)
 {
     cout << "\033[34;1m";
     bool zero_bean = true;
@@ -554,6 +656,7 @@ void Bean::StrategyRandom(int p_id)
         if (IsLiving(i) && !BeTeammate(i, p_id) && ori_beans_[i] > 1)
             lower_than_two = false;
     }
+    // when no player has bean, always accumulate
     if (all_zero_bean)
     {
         last_[p_id] = accumulate;
@@ -567,10 +670,19 @@ void Bean::StrategyRandom(int p_id)
             int choice = rand() % 6;
             if (choice == 3 || beans_[p_id] < consume[choice])
                 continue;
+            // when no enemy has bean, don't use small defense
             if (zero_bean && choice == 4)
                 continue;
+            // when no enemy has more than 1 bean, don't use medium defense
             if (lower_than_two && choice == 5)
                 continue;
+            // when has more than 1 bean, more probability to attack
+            if (ori_beans_[p_id] >= 2 && (choice == 0 || choice == 4 || choice == 5))
+            {
+                int p = rand() % 3;
+                if (p == 0)
+                    continue;
+            }
             last_[p_id] = (Option)choice;
             beans_[p_id] -= consume[choice];
             cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";

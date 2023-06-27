@@ -54,8 +54,6 @@
 - 结算顺序：`净化`->`干扰`&`嘲讽`->`反弹`&`对枪`->`判定`->`反反弹`
 - 可能会出现同归于尽的情况
 
-注：本游戏的电脑策略有3种，可通过增减注释符进行切换
-
 ## 代码结构
 
 整个项目由cmake连接
@@ -68,9 +66,7 @@
 
 "攒豆"由`Bean`类维护，由`Game`继承而来，在`games/accumulating_beans.h`和`games/accumulating_beans.cpp`中
 
-单机多人分队模式在`main/main_fortune.cpp`和`main/main_accumulating_beans.cpp`中
-
-pvc模式在`main/main_accumulating_beans_pvc.cpp`和 `main/main_fortune_pvc.cpp`中
+可执行文件在`main/main_fortune.cpp`和`main/main_accumulating_beans.cpp`中，用cmake build后可进行游玩
 
 ## 发展方向
 
