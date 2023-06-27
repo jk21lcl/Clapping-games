@@ -47,19 +47,19 @@ class Bean : public Game
         vector<Option> last_;
         vector<int> damage_; // damage_matrix, (i,j) means i damages j
         // 4 means break_super_defense, 5 means kill
-        vector<int> ori_beans_;
+        vector<int> ori_beans_; // the number of beans at the beginning of this round
         vector<int> beans_;
         GameMode mode_;
 
-        bool is_anti_rebound_;
-        vector<bool> has_disturb_;
-        vector<bool> is_disturbed_;
-        vector<int> num_taunt_;
-        vector<bool> is_purified_;
+        bool is_anti_rebound_; // whether there exists anti rebound
+        vector<bool> has_disturb_; // whether a team uses disturb
+        vector<bool> is_disturbed_; // whether a team is disturbed
+        vector<int> num_taunt_; // the number of taunt in a team
+        vector<bool> is_purified_; // whether a team is purified
 
-        bool comp_use_disturb;
-        bool comp_use_taunt;
-        bool comp_use_purify;
+        bool comp_use_disturb; // whether computer uses disturb
+        bool comp_use_taunt; // whether computer uses taunt
+        bool comp_use_purify; // whether computer uses purify
 
         void ShowOption() const override;
         void ShowInfo() const override;
@@ -71,7 +71,7 @@ class Bean : public Game
 
         // pure random except always accumulate at the first round
         void FullEasy(int p_id, int round);
-        // not implemented yet
+        // use some strategy
         void FullHard(int p_id);
         // pure random except always accumulate at the first round
         void PartialEasy(int p_id, int round);
