@@ -453,6 +453,8 @@ void Bean::Start()
                 is_purified_[i] = false;
             is_anti_rebound_ = false;
 
+            comp_use_attack = false;
+            comp_use_anti_rebound = false;
             comp_use_disturb = false;
             comp_use_taunt = false;
             comp_use_purify = false;
@@ -554,7 +556,7 @@ void Bean::FullEasy(int p_id, int round)
 void Bean::FullHard(int p_id)
 {
     cout << "\033[34;1m";
-    int prob[16] = {25,10,10,10,10,4,1,2,3,0,2,1,2,8,10,10};
+    int prob[16] = {25,15,10,10,15,4,1,2,3,0,2,1,2,6,10,10};
 
     int max_enemy_bean = 0;
     int max_ally_bean = 0;
@@ -594,12 +596,22 @@ void Bean::FullHard(int p_id)
         prob[14] = 0;
         prob[15] = 0;
     }
+    //// if computer has used disturb, taunt or purify, more probability to attack
+    if (comp_use_disturb || comp_use_taunt || comp_use_purify)
+    {
+        prob[1] = 15;
+        prob[2] = 15;
+        prob[3] = 15;
+    }
+    
     //// if ally is much, don't use anti rebound 
     if (num_ally >= 4)
     {
         prob[12] = 0;
     }
     //// at most one computer use disturb, taunt, purify
+    if (comp_use_anti_rebound)
+        prob[12] = 0;
     if (comp_use_disturb)
         prob[13] = 0;
     if (comp_use_taunt)
@@ -612,18 +624,21 @@ void Bean::FullHard(int p_id)
         prob[6] = 0;
     }
     //// if all enemy has at most 1 bean, don't use medium defense, super defense, 
-    //// double rebound
+    //// break super defense, double rebound
     if (max_enemy_bean <= 1)
     {
         prob[5] = 0;
         prob[7] = 0;
+        prob[8] = 0;
         prob[11] = 0;
     }
-    //// if no enemy has bean, don't use small defense, rebound
+    //// if no enemy has bean, don't use small defense, rebound, taunt, purify
     if (max_enemy_bean == 0)
     {
         prob[4] = 0;
         prob[10] = 0;
+        prob[14] = 0;
+        prob[15] = 0;
     }
     //// if all ally has at most 1 bean, don't use break super defense
     if (max_ally_bean <= 1)
@@ -634,6 +649,13 @@ void Bean::FullHard(int p_id)
     if (max_ally_bean == 0)
     {
         prob[12] = 0;
+    }
+    //// if no computer attacks, don't use disturb, taunt, purify
+    if (!comp_use_attack)
+    {
+        prob[13] = 0;
+        prob[14] = 0;
+        prob[15] = 0;
     }
 
     int sum[16];
@@ -673,12 +695,15 @@ void Bean::FullHard(int p_id)
     {
         case 1:
             RandomAttack(p_id, single_shot);
+            comp_use_attack = true;
             break;
         case 2:
             RandomAttack(p_id, double_shot);
+            comp_use_attack = true;
             break;
         case 3:
             RandomAttack(p_id, triple_shot);
+            comp_use_attack = true;
             break;
         case 8:
             RandomAttack(p_id, break_super_defense);
@@ -688,6 +713,7 @@ void Bean::FullHard(int p_id)
             break;
         case 12:
             is_anti_rebound_ = true;
+            comp_use_anti_rebound = true;
             break;
         case 13:
             has_disturb_[players_[p_id]->GetTeam()] = true;

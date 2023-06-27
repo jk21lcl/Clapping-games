@@ -116,6 +116,10 @@ void Game::End() const
         cout << "\033[1;35m";
         for (int i = 0; i < num_t; i++)
             if (teams_[i]->GetState() == ingame)
+            {
                 cout << teams_[i]->GetName() << " wins!\033[0m" << endl;
+                return;
+            }
+        cout << "It's a tie!\033[0m" << endl;
     }
 }

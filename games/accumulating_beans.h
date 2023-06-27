@@ -57,6 +57,8 @@ class Bean : public Game
         vector<int> num_taunt_; // the number of taunt in a team
         vector<bool> is_purified_; // whether a team is purified
 
+        bool comp_use_attack; // whether computer uses normal attack
+        bool comp_use_anti_rebound; // whether computer uses anti rebound
         bool comp_use_disturb; // whether computer uses disturb
         bool comp_use_taunt; // whether computer uses taunt
         bool comp_use_purify; // whether computer uses purify
