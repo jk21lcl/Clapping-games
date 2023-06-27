@@ -604,6 +604,11 @@ void Bean::FullHard(int p_id)
         prob[2] = 15;
         prob[3] = 15;
     }
+    //// if computer has used taunt, then more probability to accumulate
+    if (comp_use_taunt)
+    {
+        prob[0] = 30;
+    }
     
     //// if ally is much, don't use anti rebound 
     if (num_ally >= 4)
