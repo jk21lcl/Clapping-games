@@ -58,6 +58,57 @@ int Bean::AttackPlayer()
     return tar;
 }
 
+void Bean::RandomAttack(int p_id, Option option)
+{
+    int tar;
+    int times;
+    switch (option)
+    {
+        case single_shot: case break_super_defense: case kill:
+            times = 1;
+            break;
+        case double_shot:
+            times = 2;
+            break;
+        case triple_shot:
+            times = 3;
+            break;
+        default:
+            times = 0;
+            break;
+    }
+
+    int n = 0;
+    cout << " Target: ";
+    while (n < times)
+    {
+        tar = rand() % num_p;
+        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
+        {
+            n++;
+            switch (option)
+            {
+                case single_shot: case double_shot: case triple_shot:
+                    damage_[p_id * num_p + tar]++;
+                    break;
+                case break_super_defense:
+                    damage_[p_id * num_p + tar] = 4;
+                    break;
+                case kill:
+                    damage_[p_id * num_p + tar] = 5;
+                    break;
+                default:
+                    break;
+            }
+            cout << players_[tar]->GetName();
+            if (n != times)
+                cout << ", ";
+            else
+                cout << ".";
+        }
+    }
+}
+
 void Bean::Input(int p_id)
 {
     int choice;
@@ -151,7 +202,7 @@ void Bean::Input(int p_id)
                                 is_anti_rebound_ = true;
                                 break;
                             case 13:
-                                has_disturbed_[players_[p_id]->GetTeam()] = true;
+                                has_disturb_[players_[p_id]->GetTeam()] = true;
                                 break;
                             case 14:
                                 num_taunt_[players_[p_id]->GetTeam()]++;
@@ -186,7 +237,7 @@ void Bean::Process()
     // disturb
     for (int i = 0; i < num_t; i++)
     {
-        if (teams_[i]->GetState() == ingame && has_disturbed_[i] && !is_purified_[i])
+        if (teams_[i]->GetState() == ingame && has_disturb_[i] && !is_purified_[i])
             for (int j = 0; j < num_t; j++)
                 if (teams_[j]->GetState() == ingame && j != i)
                     is_disturbed_[j] = true;
@@ -374,7 +425,7 @@ void Bean::Start()
     damage_.resize(num_p * num_p);
     ori_beans_.resize(num_p);
     beans_.resize(num_p);
-    has_disturbed_.resize(num_t);
+    has_disturb_.resize(num_t);
     is_disturbed_.resize(num_t);
     num_taunt_.resize(num_t);
     is_purified_.resize(num_t);
@@ -393,7 +444,7 @@ void Bean::Start()
             for (int i = 0; i < num_p * num_p; i++)
                 damage_[i] = 0;
             for (int i = 0; i < num_t; i++)
-                has_disturbed_[i] = false;
+                has_disturb_[i] = false;
             for (int i = 0; i < num_t; i++)
                 is_disturbed_[i] = false;
             for (int i = 0; i < num_t; i++)
@@ -401,6 +452,10 @@ void Bean::Start()
             for (int i = 0; i < num_t; i++)
                 is_purified_[i] = false;
             is_anti_rebound_ = false;
+
+            comp_use_disturb = false;
+            comp_use_taunt = false;
+            comp_use_purify = false;
 
             ShowInfo();
             for (int i = 0; i < num_p; i++)
@@ -453,100 +508,28 @@ void Bean::FullEasy(int p_id, int round)
             beans_[p_id] -= consume[choice];
             cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
 
-            int tar;
-            int times = 0;
             switch (choice)
             {
                 case 1:
-                    cout << " Target: ";
-                    while (times < 1)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar]++;
-                            cout << players_[tar]->GetName();
-                            if (times != 1)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
+                    RandomAttack(p_id, single_shot);
                     break;
                 case 2:
-                    cout << " Target: ";
-                    while (times < 2)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar]++;
-                            cout << players_[tar]->GetName();
-                            if (times != 2)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
+                    RandomAttack(p_id, double_shot);
                     break;
                 case 3:
-                    cout << " Target: ";
-                    while (times < 3)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar]++;
-                            cout << players_[tar]->GetName();
-                            if (times != 3)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
+                    RandomAttack(p_id, triple_shot);
                     break;
                 case 8:
-                    cout << " Target: ";
-                    while (times < 1)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar] = 4;
-                            cout << players_[tar]->GetName();
-                            if (times != 1)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
+                    RandomAttack(p_id, break_super_defense);
                     break;
                 case 9:
-                    cout << " Target: ";
-                    while (times < 1)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar] = 5;
-                            cout << players_[tar]->GetName();
-                            if (times != 1)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
+                    RandomAttack(p_id, kill);
                     break;
                 case 12:
                     is_anti_rebound_ = true;
                     break;
                 case 13:
-                    has_disturbed_[players_[p_id]->GetTeam()] = true;
+                    has_disturb_[players_[p_id]->GetTeam()] = true;
                     break;
                 case 14:
                     num_taunt_[players_[p_id]->GetTeam()]++;
@@ -570,7 +553,164 @@ void Bean::FullEasy(int p_id, int round)
 
 void Bean::FullHard(int p_id)
 {
+    cout << "\033[34;1m";
+    int prob[16] = {25,10,10,10,10,4,1,2,3,0,2,1,2,8,10,10};
 
+    int max_enemy_bean = 0;
+    int max_ally_bean = 0;
+    int num_enemy = 0;
+    int num_ally = 0;
+
+    for (int i = 0; i < num_p; i++)
+    {
+        if (IsLiving(i))
+        {
+            int b = ori_beans_[i];
+            if (!BeTeammate(p_id, i))
+            {
+                num_enemy++;
+                if (b > max_enemy_bean)
+                    max_enemy_bean = b;
+            }
+            else
+            {
+                num_ally++;
+                if (b > max_ally_bean)
+                    max_ally_bean = b;
+            }
+        }
+    }
+
+    // process the probability distribution
+
+    //// if enemy is few, more probability to use rebound and anti rebound, 
+    //// don't use disturb, taunt, purify
+    if (num_enemy <= 2)
+    {
+        prob[10] = 10;
+        prob[11] = 4;
+        prob[12] = 5;
+        prob[13] = 0;
+        prob[14] = 0;
+        prob[15] = 0;
+    }
+    //// if ally is much, don't use anti rebound 
+    if (num_ally >= 4)
+    {
+        prob[12] = 0;
+    }
+    //// at most one computer use disturb, taunt, purify
+    if (comp_use_disturb)
+        prob[13] = 0;
+    if (comp_use_taunt)
+        prob[14] = 0;
+    if (comp_use_purify)
+        prob[15] = 0;
+    //// if all enemy has at most 2 beans, don't use big defense
+    if (max_enemy_bean <= 2)
+    {
+        prob[6] = 0;
+    }
+    //// if all enemy has at most 1 bean, don't use medium defense, super defense, 
+    //// double rebound
+    if (max_enemy_bean <= 1)
+    {
+        prob[5] = 0;
+        prob[7] = 0;
+        prob[11] = 0;
+    }
+    //// if no enemy has bean, don't use small defense, rebound
+    if (max_enemy_bean == 0)
+    {
+        prob[4] = 0;
+        prob[10] = 0;
+    }
+    //// if all ally has at most 1 bean, don't use break super defense
+    if (max_ally_bean <= 1)
+    {
+        prob[8] = 0;
+    }
+    //// if no ally has been, don't use anti rebound
+    if (max_ally_bean == 0)
+    {
+        prob[12] = 0;
+    }
+
+    int sum[16];
+    sum[0] = prob[0];
+    for (int i = 1; i < 16; i++)
+        sum[i] = sum[i - 1] + prob[i];
+
+    // determine the choice
+
+    int choice = 0;
+    //// when itself has at least 5 beans, always kill
+    if (beans_[p_id] >= 5)
+        choice = 9;
+    else
+    {
+        while (true)
+        {
+            int r = rand() % sum[15];
+            for (int i = 0; i < 16; i++)
+                if (r < sum[i])
+                {
+                    choice = i;
+                    break;
+                }
+        
+            if (beans_[p_id] < consume[choice])
+                continue;
+            break;
+        }
+    }
+
+    // deal with the choice
+    last_[p_id] = (Option)choice;
+    beans_[p_id] -= consume[choice];
+    cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
+    switch (choice)
+    {
+        case 1:
+            RandomAttack(p_id, single_shot);
+            break;
+        case 2:
+            RandomAttack(p_id, double_shot);
+            break;
+        case 3:
+            RandomAttack(p_id, triple_shot);
+            break;
+        case 8:
+            RandomAttack(p_id, break_super_defense);
+            break;
+        case 9:
+            RandomAttack(p_id, kill);
+            break;
+        case 12:
+            is_anti_rebound_ = true;
+            break;
+        case 13:
+            has_disturb_[players_[p_id]->GetTeam()] = true;
+            comp_use_disturb = true;
+            break;
+        case 14:
+            num_taunt_[players_[p_id]->GetTeam()]++;
+            comp_use_taunt = true;
+            break;
+        case 15:
+            for (int i = 0; i < num_t; i++)
+            {
+                if (i != players_[p_id]->GetTeam())
+                    is_purified_[i] = true;
+            }
+            comp_use_purify = true;
+            break;
+        default:
+            break;
+    }
+    cout << endl;
+    
+    cout << "\033[0m";
 }
 
 void Bean::PartialEasy(int p_id, int round)
@@ -593,43 +733,13 @@ void Bean::PartialEasy(int p_id, int round)
             beans_[p_id] -= consume[choice];
             cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
 
-            int tar;
-            int times = 0;
             switch (choice)
             {
                 case 1:
-                    cout << " Target: ";
-                    while (times < 1)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar]++;
-                            cout << players_[tar]->GetName();
-                            if (times != 1)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
+                    RandomAttack(p_id, single_shot);
                     break;
                 case 2:
-                    cout << " Target: ";
-                    while (times < 2)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar]++;
-                            cout << players_[tar]->GetName();
-                            if (times != 2)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
+                    RandomAttack(p_id, double_shot);
                     break;
                 default:
                     break;
@@ -644,93 +754,49 @@ void Bean::PartialEasy(int p_id, int round)
 void Bean::PartialHard(int p_id)
 {
     cout << "\033[34;1m";
-    bool zero_bean = true;
-    bool all_zero_bean = true;
-    bool lower_than_two = true;
+
+    int max_enemy_bean = 0;
     for (int i = 0; i < num_p; i++)
     {
-        if (IsLiving(i) && !BeTeammate(i, p_id) && ori_beans_[i] != 0)
-            zero_bean = false;
-        if (IsLiving(i) && ori_beans_[i] != 0)
-            all_zero_bean = false;
-        if (IsLiving(i) && !BeTeammate(i, p_id) && ori_beans_[i] > 1)
-            lower_than_two = false;
+        if (IsLiving(i) && !BeTeammate(i, p_id) && ori_beans_[i] > max_enemy_bean)
+            max_enemy_bean = ori_beans_[i];
     }
-    // when no player has bean, always accumulate
-    if (all_zero_bean)
-    {
-        last_[p_id] = accumulate;
-        beans_[p_id]++;
-        cout << players_[p_id]->GetName() << " uses accumulate." << endl;
-    }
-    else
-    {
-        while (true)
-        {
-            int choice = rand() % 6;
-            if (choice == 3 || beans_[p_id] < consume[choice])
-                continue;
-            // when no enemy has bean, don't use small defense
-            if (zero_bean && choice == 4)
-                continue;
-            // when no enemy has more than 1 bean, don't use medium defense
-            if (lower_than_two && choice == 5)
-                continue;
-            // when has more than 1 bean, more probability to attack
-            if (ori_beans_[p_id] >= 2 && (choice == 0 || choice == 4 || choice == 5))
-            {
-                int p = rand() % 3;
-                if (p == 0)
-                    continue;
-            }
-            last_[p_id] = (Option)choice;
-            beans_[p_id] -= consume[choice];
-            cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
 
-            int tar;
-            int times = 0;
-            switch (choice)
-            {
-                case 1:
-                    cout << " Target: ";
-                    while (times < 1)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar]++;
-                            cout << players_[tar]->GetName();
-                            if (times != 1)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
-                    break;
-                case 2:
-                    cout << " Target: ";
-                    while (times < 2)
-                    {
-                        tar = rand() % num_p;
-                        if (IsLiving(tar) && !(BeTeammate(tar, p_id)))
-                        {
-                            times++;
-                            damage_[p_id * num_p + tar]++;
-                            cout << players_[tar]->GetName();
-                            if (times != 2)
-                                cout << ", ";
-                            else
-                                cout << ".";
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-            cout << endl;
-            break;
+    while (true)
+    {
+        int choice = rand() % 6;
+        if (choice == 3 || beans_[p_id] < consume[choice])
+            continue;
+        // when enemy has at most 1 bean, don't use medium defense
+        if (choice == 5 && max_enemy_bean <= 1)
+            continue;
+        // when enemy has no bean, don't use small defense
+        if (choice == 4 && max_enemy_bean == 0)
+            continue;
+        // when itself has at least 2 beans, more probability to attack
+        if (ori_beans_[p_id] >= 2 && (choice == 0 || choice == 4 || choice == 5))
+        {
+            int p = rand() % 3;
+            if (p != 0)
+                continue;
         }
+        last_[p_id] = (Option)choice;
+        beans_[p_id] -= consume[choice];
+        cout << players_[p_id]->GetName() << " uses " << option_name[choice] << ".";
+
+        switch (choice)
+        {
+            case 1:
+                RandomAttack(p_id, single_shot);
+                break;
+            case 2:
+                RandomAttack(p_id, double_shot);
+                break;
+            default:
+                break;
+        }
+        cout << endl;
+        break;
     }
     cout << "\033[0m";
 }

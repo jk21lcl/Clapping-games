@@ -52,10 +52,14 @@ class Bean : public Game
         GameMode mode_;
 
         bool is_anti_rebound_;
-        vector<bool> has_disturbed_;
+        vector<bool> has_disturb_;
         vector<bool> is_disturbed_;
         vector<int> num_taunt_;
         vector<bool> is_purified_;
+
+        bool comp_use_disturb;
+        bool comp_use_taunt;
+        bool comp_use_purify;
 
         void ShowOption() const override;
         void ShowInfo() const override;
@@ -75,4 +79,5 @@ class Bean : public Game
         void PartialHard(int p_id);
 
         int AttackPlayer(); // attack an living player, returns the player_id
+        void RandomAttack(int p_id, Option option); // randomly attack a living enemy
 };

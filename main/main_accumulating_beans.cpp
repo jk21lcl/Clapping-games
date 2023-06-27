@@ -22,7 +22,7 @@ int main()
     cout << "\033[0;33m";
     cout << "  0: no computer" << endl;
     cout << "  1: silly computer, full game" << endl;
-    cout << "  2: smart computer, full game (not implemented yet)" << endl;
+    cout << "  2: smart computer, full game" << endl;
     cout << "  3: silly computer, partial game (only support accumulate, single/double shot, small/medium defense)" << endl;
     cout << "  4: smart computer, partial game (only support accumulate, single/double shot, small/medium defense)" << endl;
     cout << "\033[0m";
