@@ -556,7 +556,7 @@ void Bean::FullEasy(int p_id, int round)
 void Bean::FullHard(int p_id)
 {
     cout << "\033[34;1m";
-    int prob[16] = {25,15,10,10,15,4,1,2,3,0,2,1,2,6,10,10};
+    int prob[16] = {20,15,10,10,15,4,1,2,3,0,2,1,2,6,10,10};
 
     int max_enemy_bean = 0;
     int max_ally_bean = 0;
